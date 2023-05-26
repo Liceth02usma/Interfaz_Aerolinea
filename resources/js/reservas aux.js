@@ -39,11 +39,15 @@ export default class Reservas {
     let response = await Helpers.fetchData(`${localStorage.getItem('url')}/reservas`)
     let data = Helpers.flat(response.data)
 
-    const nestedData = []
+    const nestedData = responseVuelos.data
+    console.log(responseVuelos.data)
 
-    data.forEach(t =>{
-      console.log(responseVuelos)
-    })
+    // data.forEach(t =>{
+    //   console.log(responseVuelos)
+    //   let pass = "pass"
+    //   responseVuelos.data.forEach(item => item.pasajero.identificacion == t.identificacion && item.fechaHora == t.fechaHora ? t.vuelos = item.vuelos : pass)
+    //   nestedData.push(t)
+    // })
 
     document.querySelector('main').innerHTML = `
         <div id="container-filter" class="relative ml-[25%] translate-y-[180px] mb:translate-y-[90px]">
@@ -141,14 +145,17 @@ export default class Reservas {
       },
       data: nestedData,
       columns: [
-          { title: 'Make', field: 'make' },
-          { title: 'Model', field: 'model' },
-          { title: 'Registration', field: 'reg' },
-          { title: 'Color', field: 'color' },
-          // agregar las columnas de botones para editar y eliminar filas
-          { formatter: Reservas.#addChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#addChildClick },
-          { formatter: Reservas.#editRowButton, width: 40, hozAlign: 'center', cellClick: Reservas.#editRowClick },
-          { formatter: Reservas.#deleteRowButton, width: 40, hozAlign: 'center', cellClick: Reservas.#deleteRowClick }
+        { title: "USUARIO", field: "pasajero.identificacion", hozAlign: "center" },
+        { title: "FECHA/HORA RESERVA", field: "fechaHora", hozAlign: "center", formatter: (cell, formatterParams) => {
+            const { outputFormat = "yyyy-MM-dd hh:mm a" } = formatterParams
+            let value = cell.getValue()
+            return DateTime.fromISO(value).toFormat(outputFormat)
+          }
+        },
+        { title: "CANCELADO", field: "cancelado", hozAlign: "center", formatter:"tickCross" },
+        { formatter: Reservas.#addChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#addChildClick },
+        { formatter: this.#editRowButton, width: 40, hozAlign: "center", cellClick: this.#editRowClick },
+        { formatter: this.#deleteRowButton, width: 40, hozAlign: "center", cellClick: this.#deleteRowClick }
       ],
       rowFormatter: function (row) {
           //create and style holder elements
@@ -168,14 +175,46 @@ export default class Reservas {
 
           const subTable = new Tabulator(tableEl, {
               layout: 'fitColumns',
-              data: row.getData().serviceHistory,
+              data: row.getData().vuelos,
               columns: [
-                  { title: 'Date', field: 'date', sorter: 'date' },
-                  { title: 'Engineer', field: 'engineer' },
-                  { title: 'Action', field: 'actions' },
-                  // agregar las columnas de botones para editar y eliminar filas
-                  { formatter: Reservas.#editRowChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#editRowChildClick },
-                  { formatter: Reservas.#deleteRowChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#deleteRowChildClick }
+                { title: "ORIGEN", field: "vuelo.trayecto.origen", width: 90 },
+                { title: "DESTINO", field: "vuelo.trayecto.destino", hozAlign: "left" },
+                // problema con conversión de fechas/horas ISO >> https://github.com/olifolkerd/tabulator/issues/3505
+                // solución temporal:
+                { title: "COSTO", field: "vuelo.trayecto.costo", hozAlign: "center", formatter: "money" },
+                { title: "SILLA", field: "silla.posicion", hozAlign: "left", width: 90 },
+                { title: "UBICACION", field: "silla.ubicacion", hozAlign: "left" },
+                {
+                  title: "MENU", field: "silla.menu", hozAlign: "left", width: 150, formatter: (cell) => {
+                    try {
+                      return cell.getValue().toLowerCase().replace("_", " ").replace("_", " ")
+                    } catch (error) {
+                      return cell.getValue()
+                    }
+                  }
+                },
+                {
+                  title: "LICOR", field: "silla.licor", hozAlign: "left", formatter: (cell) => {
+                    try {
+                      return cell.getValue().toLowerCase().replace("_", " ")
+                    } catch (error) {
+                      return cell.getValue()
+                    }
+                  }
+                },
+                {
+                  title: "TIPO", field: "silla.menu", hozAlign: "center", formatter: (cell) => {
+                    try {
+                      console.log(cell.getData().silla.menu.toLowerCase())
+                      return "Ejecutivo"
+                    } catch (error) {
+                      return "Economico"
+                    }
+                  }
+                },
+                { title: "CHECK-IN", field: "checkIn", hozAlign: "center", formatter: "tickCross" },
+                { formatter: Reservas.#editRowButton, width: 40, hozAlign: "center", cellClick: Reservas.#editRowClick },
+                { formatter: Reservas.#deleteRowButton, width: 40, hozAlign: "center", cellClick: Reservas.#deleteRowClick }
               ]
           })
       }
@@ -196,16 +235,7 @@ export default class Reservas {
     //     data: lista, //assign data to table
     //     layout: "fitColumns", //fit columns to width of table (optional)
     //     columns: [ //Define Table Columns
-    //     { title: "USUARIO", field: "identificacion", hozAlign: "center" },
-    //     { title: "FECHA/HORA RESERVA", field: "fechaHora", hozAlign: "center", formatter: (cell, formatterParams) => {
-    //         const { outputFormat = "yyyy-MM-dd hh:mm a" } = formatterParams
-    //         let value = cell.getValue()
-    //         return DateTime.fromISO(value).toFormat(outputFormat)
-    //       }
-    //     },
-    //     { title: "CANCELADO", field: "cancelado", hozAlign: "center", formatter:"tickCross" },
-    //     { formatter: this.#editRowButton, width: 40, hozAlign: "center", cellClick: this.#editRowClick },
-    //     { formatter: this.#deleteRowButton, width: 40, hozAlign: "center", cellClick: this.#deleteRowClick }
+
     //     ],
     //     footerElement: `
     //     <div class='flex justify-end w-full'>
