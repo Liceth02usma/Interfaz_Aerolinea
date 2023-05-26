@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es">
+<form id="form-vuelos" class="w-full">
+    <label class="mt-2 block">
+        <span class="text-gray-600">Trayecto</span>
+        <select id="trayectos" class="input-indigo">$0</select>
+    </label>
+
+    <label class="mt-2 block">
+        <span class="text-gray-600">Avión</span>
+        <select id="aviones" class="input-indigo">$1</select>
+    </label>
+
+    <label class="mt-2 block">
+        <span class="text-gray-600">Fecha y hora</span>
+        <input id="fecha-hora" type="datetime-local" class="input-indigo" value="$2" min="2022-01-01T00:00" required />
+    </label>
+
+    <div class="block">
+        <div class="mt-2">
+            <div>
+                <label class="inline-flex items-center">
+                    <!-- use el atributo $4=checked para marcar la casilla por defecto -->
+                    <input id="cancelado" type="checkbox" class="check-indigo" $3 />
+                    <span class="ml-2">Cancelar el vuelo</span>
+                </label>
+            </div>
+        </div>
+    </div>
+
+</form>
+
+</html>

@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <link rel="stylesheet" href="./resources/css/styles.css">
+
+  <title>Aerolinea.com | sitio oficial</title>
+</head>
+
+<body>
+
+  <main>
+    <div class="carousel" id="carousel">
+
+      <img src="./imagenes/pexels-luis-quintero-1559699-_1_.webp" class="h-[90vh] w-[100%] object-cover">
+
+    </div>
+
+    <section
+      class="h-2/5 w-11/12 absolute bg-[#ddd] rounded-[10px] p-2.5 shadow-2xl top-3/4 left-0 right-0 bottom-0 m-auto text-center z-10">
+      <div class="flex justify-start w-11/12 h-3/4 top-0 left-0 right-0 bottom-0 m-auto flex-wrap">
+        <div id="caja0" class="font-bold self-center justify-between basis-1/4 my-7">Vuelos</div>
+        <div id="caja1" class="self-center justify-between basis-1/4 my-7">
+          <form action="" method="post">
+            <input type="radio" id="mi-checkbox">
+            <label for="mi-checkbox" class="text-[0.93em] mr-[25%]">ida y vuelta</label>
+          </form>
+        </div>
+        <div id="caja2" class="self-center justify-between basis-1/4 my-7">
+          <form action="" method="post">
+            <input type="radio" id="mi-checkbox1">
+            <label for="mi-checkbox1" class="text-[0.93em] mr-[25%]">solo ida</label>
+          </form>
+        </div>
+        <div id="caja3" class="self-center justify-between basis-1/4 my-7">
+          <form action="" method="post">
+            <input type="radio" id="mi-checkbox2">
+            <label for="mi-checkbox2" class="text-[0.93em] mr-[25%]">varios vuelos</label>
+          </form>
+        </div>
+        <div id="caja4" class="justify-around grow-[2]">
+          <form action="" method="post">
+            <label for="campo-de-texto" class="text-[0.93em] mr-[25%]">Origen:</label>
+            <input type="text" id="campo-de-texto1" name="origen" placeholder="Origen"
+              class="h-[30px] w-[140px] rounded-md border-[#F8A50B] border-[2px]">
+          </form>
+        </div>
+        <div id="caja5" class="justify-around grow-[2]">
+          <form action="" method="post">
+            <label for="campo-de-texto" class="text-[0.93em] mr-[25%]">Destino:</label>
+            <input type="text" id="campo-de-texto" name="destino" placeholder="Destino"
+              class="h-[30px] w-[140px] rounded-md border-[#F8A50B] border-[2px]">
+          </form>
+        </div>
+        <div id="caja6" class="justify-around grow-[2]">
+          <form action="" method="post">
+            <label for="fecha-ida" class="text-[0.93em] mr-[25%]">Fecha-ida:</label>
+            <input type="date" id="fecha-ida" name="fecha-ida" placeholder="Fecha-ida"
+              class="h-[30px] w-[140px] rounded-md border-[#F8A50B] border-[2px]">
+          </form>
+        </div>
+        <div id="caja7" class="justify-around grow-[2]">
+          <form action="" method="post">
+            <label for="fecha-regreso" class="text-[0.93em] mr-[25%]">Fecha-regreso:</label>
+            <input type="date" id="fecha-regreso" name="fecha-regreso" placeholder="Fecha-regreso"
+              class="h-[30px] w-[140px] rounded-md border-[#F8A50B] border-[2px]">
+          </form>
+        </div>
+        <div id="caja10" class="justify-around grow-[2]">
+          <label for="n-pasajeros" class="text-[0.93em] mr-[25%]">n-pasajeros - clase:</label>
+          <select id="n-pasajeros" name="n-pasajeros"
+            class="h-[30px] w-[142px] rounded-md border-[#F8A50B] border-[2px]">
+            <option value="1">1 - ejecutiva - economica</option>
+            <option value="2">2 - ejecutiva - economica</option>
+            <option value="3">3 - ejecutiva - economica</option>
+          </select>
+
+        </div>
+        <div id="caja9" class="ml-[50%]">
+          <button type="submit"
+            class="my-7 h-[38px] font-bold w-[87px] border-0 bg-[#1808fa] text-white rounded-full">Buscar</button>
+        </div>
+      </div>
+
+    </section>
+    <p id="text-oferta" class="absolute font-bold bottom-[-25%] left-[2%] text-[1.5em]">Ofertas que no te puedes perder
+    </p>
+    <div class="flex justify-around flex-wrap mt-[40vh]">
+      <div
+        class="bg-[#f7f4f4] mb-[20px] border-[#ccc] rounded-[5px] text-center w-[26em] h-[25em] shadow-[0 0 15px rgba(49, 46, 46, 0.315)]">
+        <svg width="26em" height="12em">
+          <rect width="180vw" height="180vh" fill="#ddd" />
+          <text x="35%" y="50%" fill="white" dy=".3em">140x140</text>
+        </svg>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis sed magnam et a, dignissimos ratione,
+          vero cupiditate ex delectus obcaecati
+          maxime voluptatibus dolore autem
+        </p>
+        <button class="bg-[#1808fa] border-0 text-white h-[38px] w-[87px] rounded-full mt-[10%]">Ver oferta</button>
+      </div>
+      <div
+        class="bg-[#f7f4f4] mb-[20px] border-[#ccc] rounded-[5px] text-center w-[26em] h-[25em] shadow-[0 0 15px rgba(49, 46, 46, 0.315)]">
+        <svg width="26em" height="12em">
+          <rect width="200vw" height="180vh" fill="#ddd" />
+          <text x="35%" y="50%" fill="white" dy=".3em">140x140</text>
+        </svg>
+        <p>
+          Lorem ipsum dolor sit amet consectetur adipisicing elit. Corporis sed magnam et a, dignissimos ratione,
+          vero cupiditate ex delectus obcaecati
+          maxime voluptatibus dolore autem
+        </p>
+        <button class="bg-[#1808fa] border-0 text-white h-[38px] w-[87px] rounded-full mt-[10%]">Ver oferta</button>
+      </div>
+    </div>
+  </main>
+
+
+
+
+</body>
+
+</html>
