@@ -38,19 +38,12 @@ export default class Reservas {
     // https://tabulator.info/docs/5.4/quickstart
     let response = await Helpers.fetchData(`${localStorage.getItem('url')}/reservas`)
     let data = Helpers.flat(response.data)
-    let lista = []
-    data.forEach(async (t) => {
-      let listaReservas = []
-      let pass = "pass"
-      responseVuelos.data.forEach(item => item.pasajero.identificacion == t.identificacion ? listaReservas = item.vuelos : pass)
-      Reservas.#data = Helpers.flat(listaReservas)
 
-      // let tabla3 = await Reservas.TablaReservasVuelos(Reservas.#data)
-      // console.log(tabla3)
+    const nestedData = []
 
-      lista.push({ identificacion: t.identificacion, fechaHora: t.fechaHora, cancelado: t.cancelada })
+    data.forEach(t =>{
+      console.log(responseVuelos)
     })
-    console.log(lista)
 
     document.querySelector('main').innerHTML = `
         <div id="container-filter" class="relative ml-[25%] translate-y-[180px] mb:translate-y-[90px]">
@@ -113,82 +106,80 @@ export default class Reservas {
     });
 
 
-    // Crear la tabla principal
-    let cont = 0
-    let table = new Tabulator("#reservas-table", {
-      height: "311px",
-      dataTree: true,
-      dataTreeStartExpanded: true,
+  //   const nestedData = [
+  //     {
+  //         id: 1,
+  //         make: 'Ford',
+  //         model: 'focus',
+  //         reg: 'P232 NJP',
+  //         color: 'white',
+  //         serviceHistory: [
+  //             { date: '01/02/2016', engineer: 'Steve Boberson', actions: 'Changed oli filter' },
+  //             { date: '07/02/2017', engineer: 'Martin Stevenson', actions: 'Break light broken' }
+  //         ]
+  //     },
+  //     {
+  //         id: 1,
+  //         make: 'BMW',
+  //         model: 'm3',
+  //         reg: 'W342 SEF',
+  //         color: 'red',
+  //         serviceHistory: [
+  //             { date: '22/05/2017', engineer: 'Jimmy Brown', actions: 'Aligned wheels' },
+  //             { date: '11/02/2018', engineer: 'Lotty Ferberson', actions: 'Changed Oil' },
+  //             { date: '04/04/2018', engineer: 'Franco Martinez', actions: 'Fixed Tracking' }
+  //         ]
+  //     }
+  // ]
+
+  //define table
+  const table = new Tabulator('#reservas-table', {
+      height: '500px',
+      layout: 'fitColumns',
+      columnDefaults: {
+          resizable: true
+      },
+      data: nestedData,
       columns: [
-        { title: "Name", field: "name", width: 200, responsive: 0 },
-        { title: "Location", field: "location", width: 150 },
-        { title: "Gender", field: "gender", width: 150, responsive: 2 },
-        { title: "Favourite Color", field: "col", width: 150 },
-        { title: "Date Of Birth", field: "dob", hozAlign: "center", sorter: "date", width: 150 }
-      ],
-      data: [
-        {
-          name: "Oli Bob",
-          location: "United Kingdom",
-          gender: "male",
-          col: "red",
-          dob: "14/04/1984",
-          children: [
-            {
-              name2: "Hola",
-              age: 7,
-              city: "New York",
-
-            }
-          ]
-        },
-        {
-          name: "Jamie Newhart",
-          location: "India",
-          gender: "male",
-          col: "green",
-          dob: "14/05/1985",
-          children: [
-            {
-              name2: "Hola",
-              age: 7,
-              city: "New York",
-
-            }
-          ]
-        }
+          { title: 'Make', field: 'make' },
+          { title: 'Model', field: 'model' },
+          { title: 'Registration', field: 'reg' },
+          { title: 'Color', field: 'color' },
+          // agregar las columnas de botones para editar y eliminar filas
+          { formatter: Reservas.#addChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#addChildClick },
+          { formatter: Reservas.#editRowButton, width: 40, hozAlign: 'center', cellClick: Reservas.#editRowClick },
+          { formatter: Reservas.#deleteRowButton, width: 40, hozAlign: 'center', cellClick: Reservas.#deleteRowClick }
       ],
       rowFormatter: function (row) {
-        var rowData = row.getData();
+          //create and style holder elements
+          var holderEl = document.createElement('div')
+          var tableEl = document.createElement('div')
 
-        if (rowData.children) {
+          holderEl.style.boxSizing = 'border-box'
+          holderEl.style.padding = '10px 30px 10px 10px'
+          holderEl.style.borderTop = '1px solid #333'
+          holderEl.style.borderBotom = '1px solid #333'
 
-          console.log(rowData)
-          var childTableEl = document.createElement("div");
-          childTableEl.id = "child-table-" + cont;
-          console.log("child-table-" + cont)
-          childTableEl.style.margin = "10px 0";
-          row.getElement().appendChild(childTableEl);
-          console.log(row.getElement().appendChild(childTableEl))
+          tableEl.style.border = '1px solid #333'
 
-          var childTable = new Tabulator("#" + childTableEl.id, {
-            layout: "fitColumns",
-            data: rowData.children,
-            columns: [
-              { title: "Name", field: "name2" },
-              { title: "Age", field: "age" },
-              { title: "City", field: "city" }
-            ],
-            dataTree: true,
-            dataTreeStartExpanded: false,
-            dataTreeChildField: "children",
-            dataTreeCollapseElement: false
-          });
-          cont += 1
-        }
+          holderEl.appendChild(tableEl)
 
+          row.getElement().appendChild(holderEl)
+
+          const subTable = new Tabulator(tableEl, {
+              layout: 'fitColumns',
+              data: row.getData().serviceHistory,
+              columns: [
+                  { title: 'Date', field: 'date', sorter: 'date' },
+                  { title: 'Engineer', field: 'engineer' },
+                  { title: 'Action', field: 'actions' },
+                  // agregar las columnas de botones para editar y eliminar filas
+                  { formatter: Reservas.#editRowChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#editRowChildClick },
+                  { formatter: Reservas.#deleteRowChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#deleteRowChildClick }
+              ]
+          })
       }
-    });
+  })
 
 
 
@@ -516,5 +507,29 @@ export default class Reservas {
     console.log(obj)
     return obj
   }
+
+  static #addChildButton = (cell, formatterParams, onRendered) => `
+  <button id="add-child" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Agregar hijo">${icons.addChild}</button>
+`
+
+  static #addChildClick = (e, cell) => {
+  console.log('agregar hijo', cell.getRow().getData())
+}
+
+static #editRowChildButton = (cell, formatterParams, onRendered) => `
+        <button id="edit-row-child" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Editar hijo">${icons.edit}</button>
+    `
+
+    static #editRowChildClick = (e, cell) => {
+        console.log('edit child', cell.getRow().getData())
+    }
+
+    static #deleteRowChildButton = (cell, formatterParams, onRendered) => `
+        <button id="delete-row-child" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Eliminar hijo">${icons.delete}</button>
+    `
+    static #deleteRowChildClick = (e, cell) => {
+        console.log('delete child', cell.getRow().getData())
+    }
+
 
 }
