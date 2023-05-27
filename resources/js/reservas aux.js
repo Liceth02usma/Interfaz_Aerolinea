@@ -42,13 +42,6 @@ export default class Reservas {
     const nestedData = responseVuelos.data
     console.log(responseVuelos.data)
 
-    // data.forEach(t =>{
-    //   console.log(responseVuelos)
-    //   let pass = "pass"
-    //   responseVuelos.data.forEach(item => item.pasajero.identificacion == t.identificacion && item.fechaHora == t.fechaHora ? t.vuelos = item.vuelos : pass)
-    //   nestedData.push(t)
-    // })
-
     document.querySelector('main').innerHTML = `
         <div id="container-filter" class="relative ml-[25%] translate-y-[180px] mb:translate-y-[90px]">
         <h1 class="py-3 font-bold text-[1.5em]">Tabla de Reservas</h1>
@@ -110,35 +103,9 @@ export default class Reservas {
     });
 
 
-  //   const nestedData = [
-  //     {
-  //         id: 1,
-  //         make: 'Ford',
-  //         model: 'focus',
-  //         reg: 'P232 NJP',
-  //         color: 'white',
-  //         serviceHistory: [
-  //             { date: '01/02/2016', engineer: 'Steve Boberson', actions: 'Changed oli filter' },
-  //             { date: '07/02/2017', engineer: 'Martin Stevenson', actions: 'Break light broken' }
-  //         ]
-  //     },
-  //     {
-  //         id: 1,
-  //         make: 'BMW',
-  //         model: 'm3',
-  //         reg: 'W342 SEF',
-  //         color: 'red',
-  //         serviceHistory: [
-  //             { date: '22/05/2017', engineer: 'Jimmy Brown', actions: 'Aligned wheels' },
-  //             { date: '11/02/2018', engineer: 'Lotty Ferberson', actions: 'Changed Oil' },
-  //             { date: '04/04/2018', engineer: 'Franco Martinez', actions: 'Fixed Tracking' }
-  //         ]
-  //     }
-  // ]
-
   //define table
   const table = new Tabulator('#reservas-table', {
-      height: '500px',
+      height: '800px',
       layout: 'fitColumns',
       columnDefaults: {
           resizable: true
@@ -153,7 +120,7 @@ export default class Reservas {
           }
         },
         { title: "CANCELADO", field: "cancelado", hozAlign: "center", formatter:"tickCross" },
-        { formatter: Reservas.#addChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#addChildClick },
+        { formatter: Reservas.#addChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#adicionarVuelos },
         { formatter: this.#editRowButton, width: 40, hozAlign: "center", cellClick: this.#editRowClick },
         { formatter: this.#deleteRowButton, width: 40, hozAlign: "center", cellClick: this.#deleteRowClick }
       ],
@@ -224,36 +191,6 @@ export default class Reservas {
 
 
 
-    /////////////////////////////////////////////////////////////////////////////////////////////
-    // Crear la función formatter para la tabla anidada
-
-    /////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //initialize table
-    // let table = new Tabulator("#example-table", {
-    //     height: 300, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-    //     data: lista, //assign data to table
-    //     layout: "fitColumns", //fit columns to width of table (optional)
-    //     columns: [ //Define Table Columns
-
-    //     ],
-    //     footerElement: `
-    //     <div class='flex justify-end w-full'>
-    //     <button id='add-users' class='btn-teal'>Agregar</button>
-    // </div>
-    // `.trim(),
-    // })
-
-    //trigger an alert message when the row is clicked
-    // table.on("rowClick", function (e, row) {
-    //   let lista
-    //   let pass = "pass"
-    //   responseVuelos.data.forEach(item => item.pasajero.identificacion == row.getData().identificacion ? lista = item.vuelos : pass)
-    //   Reservas.#data= Helpers.flat(lista)
-    //   console.log(Reservas.#data)
-    //   Reservas.TablaReservasVuelos(Reservas.#data)
-
-    // });
   }
   static #editRowButton = (cell, formatterParams, onRendered) => `
         <button id="edit-row" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Editar">
@@ -276,75 +213,6 @@ export default class Reservas {
   }
 
 
-
-  static TablaReservasVuelos = async (data2) => {
-    let table2 = new Tabulator(document.createElement("div"), {
-      height: 150, // set height of table (in CSS or here), this enables the Virtual DOM and improves render speed dramatically (can be any valid css height value)
-      data: data2, //assign data to table
-      layout: "fitColumns", //fit columns to width of table (optional)
-      columns: [ //Define Table Columns
-        { title: "ORIGEN", field: "origen", width: 90 },
-        { title: "DESTINO", field: "destino", hozAlign: "left" },
-        { title: "AVIÓN", field: "matricula", hozAlign: "left" },
-        // problema con conversión de fechas/horas ISO >> https://github.com/olifolkerd/tabulator/issues/3505
-        // solución temporal:
-        { title: "COSTO", field: "costo", hozAlign: "center", formatter: "money" },
-        { title: "SILLA", field: "posicion", hozAlign: "left", width: 90 },
-        { title: "UBICACION", field: "ubicacion", hozAlign: "left" },
-        {
-          title: "MENU", field: "menu", hozAlign: "left", width: 150, formatter: (cell) => {
-            try {
-              return cell.getValue().toLowerCase().replace("_", " ").replace("_", " ")
-            } catch (error) {
-              return cell.getValue()
-            }
-          }
-        },
-        {
-          title: "LICOR", field: "licor", hozAlign: "left", formatter: (cell) => {
-            try {
-              return cell.getValue().toLowerCase().replace("_", " ")
-            } catch (error) {
-              return cell.getValue()
-            }
-          }
-        },
-        {
-          title: "FECHA/HORA", field: "fechaHora", hozAlign: "center", width: 150, formatter: (cell, formatterParams) => {
-            const { outputFormat = "yyyy-MM-dd hh:mm a" } = formatterParams
-            let value = cell.getValue()
-            return DateTime.fromISO(value).toFormat(outputFormat)
-          }
-        },
-        {
-          title: "TIPO", field: "menu", hozAlign: "center", formatter: (cell) => {
-            try {
-              console.log(cell.getData().menu.toLowerCase())
-              return "Ejecutivo"
-            } catch (error) {
-              return "Economico"
-            }
-          }
-        },
-        { title: "CHECK-IN", field: "checkIn", hozAlign: "center", formatter: "tickCross" },
-        { title: "CANCELADO", field: "cancelado", hozAlign: "center", formatter: "tickCross" },
-        { formatter: this.#editRowButton, width: 40, hozAlign: "center", cellClick: this.#editRowClick },
-        { formatter: this.#deleteRowButton, width: 40, hozAlign: "center", cellClick: this.#deleteRowClick }
-      ],
-      footerElement: `
-        <div class='flex justify-end w-full'>
-        <button id='add-users' class='btn-teal'>Agregar</button>
-    </div>
-    `.trim(),
-    })
-
-    this.#table2 = table2
-
-    //   this.#table2.on("tableBuilt", () => {
-    //     document.querySelector("#add-users").addEventListener("click", this.#adicionarVuelos)
-    // })
-    return table2
-  }
 
   static #editRowClick = (e) => { }
 
@@ -384,6 +252,37 @@ export default class Reservas {
         `#${this.#modal.id} #sillas`, this.#sillas.data, 'posicion', 'posicion'
       )
     })
+
+    
+
+    let vuelo_ida = async () => {
+      
+      const iVuelo = document.querySelector(`#${this.#modal.id} #vuelos`).selectedIndex
+      const vuelo = this.#vuelos.data[iVuelo]
+      let vuelosVuelta = []
+      this.#vuelos.data.forEach(t =>{
+        if( t.trayecto.origen == vuelo.trayecto.destino && t.trayecto.destino == vuelo.trayecto.origen){
+
+          vuelosVuelta.push(t)
+        }
+      })
+      if(vuelosVuelta.length !=0){
+        Helpers.populateSelectList(
+        `#${this.#modal.id} #vuelos-ida`, vuelosVuelta, 'toString', 'toString'
+      )}else{
+        document.querySelector(`#${this.#modal.id} #vuelos-ida`).innerHTML = ""
+        document.querySelector(`#${this.#modal.id} #vuelos-ida`).add(new Option("No hay devuélvase en bus :(", 0))
+
+      }
+    }
+
+    document.querySelector(`#${this.#modal.id} #check-ida`).addEventListener('change', async () =>{
+      document.querySelector(`#${this.#modal.id} #vuelos-ida`).classList.toggle('hidden')
+      await vuelo_ida()
+    })
+
+    document.querySelector(`#${this.#modal.id} #vuelos`).addEventListener('change', vuelo_ida)
+
     document.querySelector(`#${this.#modal.id} #sillas`).addEventListener('change', async () => {
       const iSilla = document.querySelector(`#${this.#modal.id} #sillas`).selectedIndex
       const silla = this.#sillas.data[iSilla]
