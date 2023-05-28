@@ -2,18 +2,18 @@
 <html lang="es">
 <form id="form-reservas" class="w-full">
 
-    <label class="mt-2 block">
+    <label class="mt-2 block hidden">
         <span class="text-gray-600">Fecha y hora - Reserva</span>
-        <input id="fecha-hora" type="datetime-local" class="input-indigo" value="" min="2023-01-01T00:00" required />
+        <input id="fecha-hora" type="datetime-local" class="input-indigo" value="2023-01-01T00:00" min="2023-01-01T00:00" required />
     </label>
 
-    <label class="mt-2 block">
-        <span class="text-gray-600">Usuario</span>
+    <label class="mt-2 block hidden">
+        <span class="text-gray-600 hidden">Usuario</span>
         <select id="usuarios" class="input-indigo">$0</select>
     </label>
 
     <label class="mt-2 block">
-        <input type="checkbox" id="check-ida" name="check1" value="true"> Ida y regreso?
+        <input type="checkbox" id="check-ida" name="check1" value="true"> Ida y ¿regreso?
     </label>
 
     <label class="mt-2 block">
@@ -21,13 +21,19 @@
         <select id="vuelos" class="input-indigo">$1</select>
     </label>
 
-    <label class="mt-2 block">
-        <select id="vuelos-ida" class="input-indigo hidden" ></select>
+    <label class="mt-2 block hidden" id="vuelos-ida2">
+        <span class="text-gray-600">Vuelo-regreso</span>
+        <select id="vuelos-ida" class="input-indigo"></select>
     </label>
 
     <label class="mt-2 block">
         <span class="text-gray-600">Silla</span>
         <select id="sillas" class="input-indigo">$2</select>
+    </label>
+
+    <label class="mt-2 block hidden" id="sillas-ida2">
+        <span class="text-gray-600">Silla-ida</span>
+        <select id="sillas-ida" class="input-indigo"></select>
     </label>
 
     <label class="mt-2 block">
@@ -36,7 +42,7 @@
             <option value="POLLO_A_LA_NARANJA">Pollo a la naranja</option>
             <option value="FILETE_DE_PESCADO">Filete de pescado</option>
             <option value="VEGETARIANO">Vegetariano</option>
-            <option value="INDEFINIDO">Indefinido</option>
+            <option value="INDEFINIDO" selected>Indefinido</option>
         </select>
     </label>
 
@@ -47,7 +53,7 @@
             <option value="VINO">Vino</option>
             <option value="OPORTO">Oporto</option>
             <option value="WHISKEY">Whiskey</option>
-            <option value="NINGUNO">Ninguno</option>
+            <option value="NINGUNO" selected>Ninguno</option>
         </select>
     </label>
 
