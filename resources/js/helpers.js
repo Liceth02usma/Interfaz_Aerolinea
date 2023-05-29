@@ -145,6 +145,7 @@ export default class Helpers {
                 options += `<option value="${item[value]}" selected>${item[text]}</option>`
             } else {
                 options += `<option value="${item[value]}">${item[text]}</option>`
+       
             }
         })
         return options
