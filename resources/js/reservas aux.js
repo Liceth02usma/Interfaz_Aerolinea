@@ -186,8 +186,14 @@ export default class Reservas {
                 { formatter: Reservas.#editRowButton, width: 40, hozAlign: "center", cellClick: Reservas.#editRowClick },
                 { formatter: Reservas.#deleteRowButton, width: 40, hozAlign: "center", cellClick: Reservas.#deleteRowClick }
               ]
+              
           })
-      }
+      },
+      footerElement: `
+              <div class='flex justify-end w-full'>
+              <button id='add-users' class='btn-teal'>Agregar</button>
+          </div>
+          `.trim(),
   })
   this.table = table
 
@@ -200,10 +206,69 @@ export default class Reservas {
             ${icons.actualizar}
         </button>
     `
-  static #editRow(e, cell) {
-    console.info('clic sobre ', e.target);
-    console.info('datos de la fila', cell.getRow().getData())
+  static #editRow = async (e, cell) => {
+    (this.#modal = new Modal({
+      title: "Actualizar una Reserva-vuelo",
+      // se pasan los datos de la fila al formulario
+      content: await this.#createForm(cell, cell.getRow().getData()),
+      buttons: [
+          {
+              id: "add-flights",
+              style: "btn-teal",
+              html: `<span>Actualizar</span>`,
+              callBack: () => this.#update2(cell.getRow()),
+          },
+          {
+              id: "cancel-add-flights",
+              style: "btn-red",
+              html: `<span>Cancelar</span>`,
+              callBack: () => this.#modal.dispose(),
+          },
+      ],
+  })).show()
+    console.log(cell.getRow().getData())
+    document.querySelector('#fechaHora').classList.remove('hidden')
+    document.querySelector('#usuario').classList.remove('hidden')
+    document.querySelector('#checkIn2').classList.remove('hidden')
+    document.querySelector('#check-ida2').classList.add('hidden')
+    document.querySelector('#vuelo1').classList.add('hidden')
+    document.querySelector('#silla2').classList.add('hidden')
+    document.querySelector('#menu2').classList.add('hidden')
+    document.querySelector('#licor2').classList.add('hidden')
   }
+
+
+  static #update2 = async (row) => {
+    // verificar si los datos cumplen con las restricciones indicadas en el formulario HTML
+    if (!Helpers.okForm("#form-reservas")) {
+        return
+    }
+    const data = {
+      fechaHora: row.getData().fechaHora,
+      usuario: row.getData().usuario.identificacion,
+      cancelada: document.querySelector('#checkIn').checked
+    }
+
+    try {
+        // enviar la solicitud de actualización con los datos del formulario
+        let response = await Helpers.fetchData(`${this.#url}/reservas`, {
+            method: "PUT",
+            body: data,
+        })
+
+        if (response.message === "ok") {
+            // modificar los datos de la fila teniendo en cuenta que en la tabla existe la columna matrícula y no avión
+            row.getData().cancelada = data.cancelada
+            row.update( row.getData())
+            Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro actualizado" })
+            this.#modal.dispose()
+        } else {
+            Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo actualizar el registro", response })
+        }
+    } catch (e) {
+        Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la actualización de registros", e })
+    }
+}
 
   static #deleteRowButton = (cell, formatterParams, onRendered) => `
         <button class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Eliminar">
@@ -211,11 +276,60 @@ export default class Reservas {
         </button>
     `
   static #deleteRow = (e, cell) => {
-    console.log('clic sobre ', e.target);
-    console.info('datos de la fila', cell.getRow().getData())
+    (this.#modal = new Modal({
+      title: "Eliminar una reserva",
+      content: `
+        Confirme la eliminación de la reserva:<br>
+        Fecha y hora: ${DateTime.fromISO(cell.getRow().getData().fechaHora).toFormat('yyyy-MM-dd hh:mm a')} <br>
+        Pasajero : ${cell.getRow().getData().usuario.identificacion}
+    `,
+      buttons: [
+          {
+              id: "add-flights",
+              style: "btn-teal",
+              html: `${icons.add}<span>Eliminar</span>`,
+              callBack: () => this.#delete2(cell.getRow()),
+          },
+          {
+              id: "cancel-add-flights",
+              style: "btn-red",
+              html: `${icons.xLg}<span>Cancelar</span>`,
+              callBack: () => this.#modal.dispose(),
+          },
+      ],
+  })).show()
   }
 
+  static async #delete2(row) {
+    const data = row.getData()
 
+    const queryString = `fechaHora=${data.fechaHora}&usuario=${data.usuario.identificacion}`
+
+
+    try {
+        // enviar la solicitud de eliminación
+
+        if(data.vuelos.length > 0){
+          data.vuelos.forEach(async t=>{
+            await this.#delete(t)
+          })
+        }
+        let response = await Helpers.fetchData(`${this.#url}/reservas/${queryString}`, {
+            method: "DELETE"
+        })
+
+        if (response.message === "ok") {
+            // eliminar la fila de la tabla
+            row.delete()
+            //Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro eliminado" })
+            this.#modal.dispose()
+        } else {
+           // Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo eliminar el registro", response })
+        }
+    } catch (e) {
+        //Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la eliminación de registros", e })
+    }
+}
 
   static #editRowClick = async (e,cell) => { 
     (this.#modal = new Modal({
@@ -297,11 +411,66 @@ export default class Reservas {
     }
 }
 
-  static #deleteRowClick = (e) => { 
-
+  static #deleteRowClick = (e,cell) => { 
+    (this.#modal = new Modal({
+      title: "Eliminar una Reserva-Vuelo",
+      content: `
+        Confirme la eliminación de la Reserva-Vuelo:<br>
+        ${cell.getRow().getData().vuelo.trayecto.origen} – ${cell.getRow().getData().vuelo.trayecto.destino}<br>
+        Silla: ${cell.getRow().getData().silla.posicion}     Pasajero: ${cell.getRow().getData().reserva.usuario.identificacion} <br>
+    `,
+      buttons: [
+          {
+              id: "add-flights",
+              style: "btn-teal",
+              html: `${icons.add}<span>Eliminar</span>`,
+              callBack: () => this.#delete(cell.getRow()),
+          },
+          {
+              id: "cancel-add-flights",
+              style: "btn-red",
+              html: `${icons.xLg}<span>Cancelar</span>`,
+              callBack: () => this.#modal.dispose(),
+          },
+      ],
+  })).show()
   }
 
+  static async #delete(row) {
+    let data
+    try {
+      data = row.getData()
+    } catch (error) {
+      data = row
+    }
+    let data2 = data
+    let reserva = data2.reserva
+    let silla = data2.silla
+    let vuelo = data2.vuelo
+    
+    const queryString = `fechaHoraReserva=${reserva.fechaHora}&usuario=${reserva.usuario.identificacion}&fechaHoraVuelo=${vuelo.fechaHora}&origen=${vuelo.trayecto.origen}&destino=${vuelo.trayecto.destino}&avion=${vuelo.avion.matricula}&fila=${silla.fila}&columna=${silla.columna}
+    `
+    console.log(queryString,data)
 
+    try {
+        // enviar la solicitud de eliminación
+        let response = await Helpers.fetchData(`${this.#url}/vuelos-reservas/${queryString}`, {
+            method: "DELETE"
+        })
+
+        if (response.message === "ok") {
+            // eliminar la fila de la tabla
+            row.delete()
+            // Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro eliminado" })
+            this.#modal.dispose()
+        } else {
+            // Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo eliminar el registro", response })
+            console.log(response)
+        }
+    } catch (e) {
+        // Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la eliminación de registros", e })
+    }
+}
  
 
   /**
@@ -416,7 +585,7 @@ export default class Reservas {
   }
 
 
-  static #createForm = async (cell,{ checkIn = "", reserva ="", vuelo="", silla=""} = {}) => {
+  static #createForm = async (cell,{ checkIn = "", reserva ="", vuelo="", silla="", cancelada=""} = {}) => {
     // crear la lista de opciones para el select de trayectos
 
     let seleccionado = vuelo == "" ? "" : `${DateTime.fromISO(vuelo.fechaHora).toFormat('yyyy-MM-dd hh:mm a')}  ${vuelo.trayecto.origen} - ${vuelo.trayecto.destino}  ${vuelo.avion.matricula}` 
@@ -426,7 +595,8 @@ export default class Reservas {
       text: "toString",
       selected: seleccionado,
     })
-    let seleccionado2 = reserva == "" ? "" : `${reserva.usuario.identificacion}` 
+    //let seleccionado2 = reserva == "" ? "" : `${reserva.usuario.identificacion}` 
+    let seleccionado2 = !(cancelada === "") ? `${cell.getRow().getData().usuario.identificacion}`: reserva == "" ? "" : `${reserva.usuario.identificacion}` 
     // crear la lista de opciones para el select de aviones
 
     let menus = [
@@ -481,6 +651,7 @@ export default class Reservas {
     this.#sillas = await Helpers.fetchData(`${this.#url}/vuelos-reservas/libres/fechaHora=${vuelo.fechaHora}&origen=${vuelo.origen}&destino=${vuelo.destino}&avion=${vuelo.avion.matricula}`)
 
     let seleccionado3 = silla == "" ? "" : `${silla.posicion}`
+
     const sillas = Helpers.toOptionList({
       items: this.#sillas.data,
       value: "posicion",
@@ -488,10 +659,12 @@ export default class Reservas {
       selected: seleccionado3 ,
     })
 
-    this.#ejecutivo = silla =="" ? this.#sillas.data[0].hasOwnProperty('licor') : silla.hasOwnProperty('licor')
+    this.#ejecutivo = silla =="" ? this.#sillas.data[0].hasOwnProperty('licor') : silla.licor != null ? silla.hasOwnProperty('licor') : false
+  
+    console.log(this.#ejecutivo,silla)
 
     let seleccionado4 = silla == "" ||( !(this.#ejecutivo) && silla != "") ? menus[3].value : silla.menu
-    console.log("esto es", seleccionado4)
+    
 
     console.log(seleccionado4)
     const menu = Helpers.toOptionList({
@@ -512,12 +685,14 @@ export default class Reservas {
       selected: seleccionado5 ,
     })
 
+    const fechaHora = cancelada === "" ? "" : `${cell.getRow().getData().fechaHora}` 
+    const cancelada2 = cancelada === "" ? false : cancelada
 
-
+    console.log("fecha Hora: ", cancelada == "")
 
     //inyectar en el formulario de vuelos los datos del objeto recibido como argumento
 
-    const htmlForm = this.#formReservas.translate(usuarios, vuelos, sillas, this.#ejecutivo ? "" : "disabled", menu,licor)
+    const htmlForm = this.#formReservas.translate(usuarios, vuelos, sillas, this.#ejecutivo ? "" : "disabled", menu,licor,fechaHora, cancelada2 ? "checked" : "")
 
     // return htmlForm
     return htmlForm
