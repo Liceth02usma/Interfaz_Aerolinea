@@ -40,10 +40,10 @@ export default class Reservas {
     // https://tabulator.info/docs/5.4/quickstart
     let response = await Helpers.fetchData(`${localStorage.getItem('url')}/reservas`)
     let data = Helpers.flat(response.data)
-    console.log(responseVuelos.data)
+
 
     const nestedData = responseVuelos.data
-    console.log(responseVuelos.data)
+
 
     document.querySelector('main').innerHTML = `
         <div id="container-filter" class="relative ml-[25%] translate-y-[180px] mb:translate-y-[90px]">
@@ -175,7 +175,7 @@ export default class Reservas {
                 {
                   title: "TIPO", field: "silla.menu", hozAlign: "center", formatter: (cell) => {
                     try {
-                      console.log(cell.getData().silla.menu.toLowerCase())
+   
                       return "Ejecutivo"
                     } catch (error) {
                       return "Economico"
@@ -195,7 +195,12 @@ export default class Reservas {
           </div>
           `.trim(),
   })
-  this.table = table
+  this.#table = table
+  this.#table.on("tableBuilt", () => {
+    document.querySelector("#add-users").addEventListener("click", this.#adicionarVuelos2)
+})
+
+
 
 //nota: adicionar un boton agregar para poner una reserva completamente nueva
 
@@ -226,7 +231,7 @@ export default class Reservas {
           },
       ],
   })).show()
-    console.log(cell.getRow().getData())
+   
     document.querySelector('#fechaHora').classList.remove('hidden')
     document.querySelector('#usuario').classList.remove('hidden')
     document.querySelector('#checkIn2').classList.remove('hidden')
@@ -236,6 +241,172 @@ export default class Reservas {
     document.querySelector('#menu2').classList.add('hidden')
     document.querySelector('#licor2').classList.add('hidden')
   }
+
+  static #adicionarVuelos2 = async () => {
+    let cell = ""
+    this.#modal = new Modal({
+        title: "Agregar una reserva",
+        content: await this.#createForm(cell),
+        buttons: [
+            {
+                id: "add-flights",
+                style: "btn-teal",
+                html: `Agregar`,
+                callBack: () => this.#add2(cell),
+            },
+            {
+                id: "cancel-add-flights",
+                style: "btn-red",
+                html: `Cancelar`,
+                callBack: () => this.#modal.dispose(),
+            }
+        ],
+    }).show()
+
+    document.querySelector('#fechaHora').classList.remove('hidden')
+    document.querySelector('#fecha-hora').removeAttribute('disabled')
+    document.querySelector('#usuario').classList.remove('hidden')
+    document.querySelector('#usuarios').disabled = false
+
+    document.querySelector(`#${this.#modal.id} #vuelos`).addEventListener('change', async () => {
+      const iVuelo = document.querySelector(`#${this.#modal.id} #vuelos`).selectedIndex
+      const vuelo = this.#vuelos.data[iVuelo]
+      this.#sillas = await Helpers.fetchData(`${this.#url}/vuelos-reservas/libres/fechaHora=${vuelo.fechaHora}&origen=${vuelo.origen}&destino=${vuelo.destino}&avion=${vuelo.avion.matricula}`)
+      console.log(this.#sillas.data)
+      Helpers.populateSelectList(
+        `#${this.#modal.id} #sillas`, this.#sillas.data, 'posicion', 'posicion'
+      )
+    })
+
+    
+
+    let vuelo_ida = async () => {
+      
+      const iVuelo = document.querySelector(`#${this.#modal.id} #vuelos`).selectedIndex
+      const vuelo = this.#vuelos.data[iVuelo]
+      this.#vuelosVuelta = []
+      this.#vuelos.data.forEach(t =>{
+        if( t.trayecto.origen == vuelo.trayecto.destino && t.trayecto.destino == vuelo.trayecto.origen){
+
+          this.#vuelosVuelta.push(t)
+        }
+      })
+      if(this.#vuelosVuelta.length !=0){
+        Helpers.populateSelectList(
+        `#${this.#modal.id} #vuelos-ida`, this.#vuelosVuelta, 'toString', 'toString'
+      )
+      let sillas_ida
+      if(document.querySelector(`#${this.#modal.id} #check-ida`).checked){
+        sillas_ida = await Helpers.fetchData(`${this.#url}/vuelos-reservas/libres/fechaHora=${this.#vuelosVuelta[0].fechaHora}&origen=${this.#vuelosVuelta[0].origen}&destino=${this.#vuelosVuelta[0].destino}&avion=${this.#vuelosVuelta[0].avion.matricula}`)
+        Helpers.populateSelectList(
+          `#${this.#modal.id} #sillas-ida`, sillas_ida.data, 'posicion', 'posicion'
+      )}
+      this.#sillas_ida = sillas_ida
+    }else{
+        document.querySelector(`#${this.#modal.id} #vuelos-ida`).innerHTML = ""
+        document.querySelector(`#${this.#modal.id} #sillas-ida`).innerHTML = ""
+        document.querySelector(`#${this.#modal.id} #vuelos-ida`).add(new Option("No hay devuélvase en bus :(", 0))
+        document.querySelector(`#${this.#modal.id} #sillas-ida`).add(new Option("No hay vuelos ahora menos sillas :(", 0))
+
+      }
+    }
+
+    document.querySelector(`#${this.#modal.id} #check-ida`).addEventListener('change', async () =>{
+      document.querySelector(`#${this.#modal.id} #vuelos-ida2`).classList.toggle('hidden')
+      document.querySelector(`#${this.#modal.id} #sillas-ida2`).classList.toggle('hidden')
+      await vuelo_ida()
+    })
+
+    document.querySelector(`#${this.#modal.id} #vuelos`).addEventListener('change', vuelo_ida)
+
+    document.querySelector(`#${this.#modal.id} #vuelos-ida`).addEventListener('change', async()=>{
+      const iVuelo = document.querySelector(`#${this.#modal.id} #vuelos`).selectedIndex
+      const vuelo = this.#vuelosVuelta[iVuelo]
+      let sillas_ida = await Helpers.fetchData(`${this.#url}/vuelos-reservas/libres/fechaHora=${vuelo.fechaHora}&origen=${vuelo.origen}&destino=${vuelo.destino}&avion=${vuelo.avion.matricula}`)
+      Helpers.populateSelectList(
+        `#${this.#modal.id} #sillas-ida`, sillas_ida.data, 'posicion', 'posicion'
+      )
+    })
+
+    
+    let cambioSillas = async () => {
+      const iSilla = document.querySelector(`#${this.#modal.id} #sillas`).selectedIndex
+      const silla = this.#sillas.data[iSilla]
+      let silla1 = silla
+      if(document.querySelector(`#${this.#modal.id} #check-ida`).checked) { 
+        const iSilla1 = document.querySelector(`#${this.#modal.id} #sillas-ida`).selectedIndex
+        silla1 = this.#sillas_ida.data[iSilla1]
+      }
+      console.log(document.querySelector(`#${this.#modal.id} #check-ida`).value)
+
+      let menu = document.querySelector(`#${this.#modal.id} #menu`)
+      let licor = document.querySelector(`#${this.#modal.id} #licor`)
+      if (silla.hasOwnProperty('licor') || silla1.hasOwnProperty('licor')) {
+        menu.disabled = false
+        licor.disabled = false
+        this.#ejecutivo = true
+      } else {
+        menu.disabled = true
+        licor.disabled = true
+        this.#ejecutivo = false
+      }
+    }
+    document.querySelector(`#${this.#modal.id} #sillas`).addEventListener('change', cambioSillas)
+    document.querySelector(`#${this.#modal.id} #sillas-ida`).addEventListener('change', cambioSillas)
+
+
+}
+
+
+static #add2 = async (cell) => {
+  // verificar si los datos cumplen con las restricciones indicadas en el formulario HTML
+  if (!Helpers.okForm("#form-reservas")) {
+    return
+  }
+
+  const data = this.#getFormData(cell,document.querySelector('#usuarios').value,document.querySelector('#fecha-hora').value)/////////////////////////////
+  console.log(data)
+
+  data.forEach( async t =>{
+    try {
+        // enviar la solicitud de creación con los datos del formulario
+        let response = await Helpers.fetchData(`${this.#url}/vuelos-reservas`, {
+          method: "POST",
+          body: t
+        })
+        console.log(response)
+
+        if (response.message === "ok") {
+
+            this.#table2.addRow(t)
+
+            Toast.info({
+              message: "Registro agregado",
+              mode: 'success',
+              error: response
+            })
+            this.#modal.dispose()
+        } else {
+
+          Toast.info({
+            message: "No se pudo agregar el registro",
+            mode: 'warning',
+            error: response
+          })
+        }
+      } catch (e) {
+
+        Toast.info({
+          message: "Sin acceso a la creación de registros",
+          mode: 'danger',
+          error: response
+        })
+      }
+  })
+
+  
+}
+
 
 
   static #update2 = async (row) => {
@@ -383,11 +554,11 @@ export default class Reservas {
     let silla = data2.silla
     let vuelo = data2.vuelo
     const c = `fechaHoraReserva=${reserva.fechaHora}&usuario=${reserva.usuario.identificacion}&fechaHoraVuelo=${vuelo.fechaHora}&origen=${vuelo.trayecto.origen}&destino=${vuelo.trayecto.destino}&avion=${vuelo.avion.matricula}&fila=${silla.fila}&columna=${silla.columna}`
-    console.log(c)
+
     console.log(vuelo.trayecto.origen)
     const data = this.#getFormData(row,data2.reserva.usuario.identificacion, data2.reserva.fechaHora)[0]
 
-    console.log(data)
+
     
 
     try {
@@ -785,14 +956,13 @@ export default class Reservas {
       obj.menu = document.querySelector(`#${this.#modal.id} #menu`).value
       obj.licor = document.querySelector(`#${this.#modal.id} #licor`).value
     }
-    if(document.querySelector(`#${this.#modal.id} #check-ida`).checked){
+    if(document.querySelector(`#${this.#modal.id} #check-ida`).checked && this.#vuelosVuelta){
       const iVuelo1 = document.querySelector(`#${this.#modal.id} #vuelos-ida`).selectedIndex
       const vuelo1 =  this.#vuelosVuelta[iVuelo1]
 
       const iSilla1 = document.querySelector(`#${this.#modal.id} #sillas-ida`).selectedIndex
       const silla1 = this.#sillas_ida.data[iSilla1]
 
-      console.log(silla1,vuelo1)
 
       let obj2 = {
         fechaHoraReserva,
