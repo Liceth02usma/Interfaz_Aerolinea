@@ -15,6 +15,7 @@ export default class Reservas {
   static #sillas
   static #ejecutivo
   static #data2
+  static #cont = 0
 
   constructor() {
     throw new Error("Esta clase no permite el uso del constructor. Utilice Reservas.init()")
@@ -212,8 +213,9 @@ export default class Reservas {
         </button>
     `
   static #editRow = async (e, cell) => {
+
     (this.#modal = new Modal({
-      title: "Actualizar una Reserva-vuelo",
+      title: "Actualizar una Reserva",
       // se pasan los datos de la fila al formulario
       content: await this.#createForm(cell, cell.getRow().getData()),
       buttons: [
@@ -231,15 +233,19 @@ export default class Reservas {
           },
       ],
   })).show()
-   
-    document.querySelector('#fechaHora').classList.remove('hidden')
-    document.querySelector('#usuario').classList.remove('hidden')
-    document.querySelector('#checkIn2').classList.remove('hidden')
-    document.querySelector('#check-ida2').classList.add('hidden')
-    document.querySelector('#vuelo1').classList.add('hidden')
-    document.querySelector('#silla2').classList.add('hidden')
-    document.querySelector('#menu2').classList.add('hidden')
-    document.querySelector('#licor2').classList.add('hidden')
+
+  document.querySelector('#fechaHora').classList.remove('hidden')
+ 
+  document.querySelector('#usuario').classList.remove('hidden')
+  document.querySelector('#checkIn2').classList.remove('hidden')
+  document.querySelector('#check-ida2').classList.add('hidden')
+  document.querySelector('#vuelo1').classList.add('hidden')
+  console.log(document.querySelector('#vuelo1'))
+  document.querySelector('#silla2').classList.add('hidden')
+  document.querySelector('#menu2').classList.add('hidden')
+  document.querySelector('#licor2').classList.add('hidden')
+
+
   }
 
   static #adicionarVuelos2 = async () => {
@@ -370,24 +376,36 @@ static #add2 = async (cell) => {
   data.forEach( async t =>{
     try {
         // enviar la solicitud de creación con los datos del formulario
-        let response = await Helpers.fetchData(`${this.#url}/vuelos-reservas`, {
+        let response = await Helpers.fetchData(`${this.#url}/reservas`, {
           method: "POST",
-          body: t
+          body: {
+            fechaHora: t.fechaHoraReserva,
+            usuario: t.usuario
+          }
         })
-        console.log(response)
-
+  
         if (response.message === "ok") {
-
+  
+          let response2 = await Helpers.fetchData(`${this.#url}/vuelos-reservas`, {
+            method: "POST",
+            body: t,
+          })
+          if (response2.message === "ok") {
+            this.#table.addRow({
+              fechaHora: t.fechaHoraReserva,
+              usuario: t.usuario
+            })
             this.#table2.addRow(t)
-
+  
             Toast.info({
               message: "Registro agregado",
               mode: 'success',
               error: response
             })
             this.#modal.dispose()
+          }
         } else {
-
+  
           Toast.info({
             message: "No se pudo agregar el registro",
             mode: 'warning',
@@ -696,8 +714,9 @@ static #add2 = async (cell) => {
         Helpers.populateSelectList(
         `#${this.#modal.id} #vuelos-ida`, this.#vuelosVuelta, 'toString', 'toString'
       )
+      let sillas_ida
       if(document.querySelector(`#${this.#modal.id} #check-ida`).checked){
-        let sillas_ida = await Helpers.fetchData(`${this.#url}/vuelos-reservas/libres/fechaHora=${this.#vuelosVuelta[0].fechaHora}&origen=${this.#vuelosVuelta[0].origen}&destino=${this.#vuelosVuelta[0].destino}&avion=${this.#vuelosVuelta[0].avion.matricula}`)
+        sillas_ida = await Helpers.fetchData(`${this.#url}/vuelos-reservas/libres/fechaHora=${this.#vuelosVuelta[0].fechaHora}&origen=${this.#vuelosVuelta[0].origen}&destino=${this.#vuelosVuelta[0].destino}&avion=${this.#vuelosVuelta[0].avion.matricula}`)
         Helpers.populateSelectList(
           `#${this.#modal.id} #sillas-ida`, sillas_ida.data, 'posicion', 'posicion'
       )}
