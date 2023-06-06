@@ -16,6 +16,7 @@ export default class Usuarios {
 
         this.#formUsuarios = await Helpers.loadPage("./resources/html/form-usuarios.html")
 
+
         this.#tipoUsuario = {
             data: [
                 {
@@ -242,6 +243,7 @@ export default class Usuarios {
                 },
             ],
         })).show()
+
     }
 
 
@@ -252,10 +254,11 @@ export default class Usuarios {
         }
 
         const data = this.#getFormData()
+     
 
         try {
             // enviar la solicitud de actualización con los datos del formulario
-            let response = await Helpers.fetchData(`${this.#url}/usuarios/${row.getData.identificacion}`, {
+            let response = await Helpers.fetchData(`${this.#url}/usuarios/${row.getData().identificacion}`, {
                 method: "PUT",
                 body: data,
             })
@@ -267,10 +270,11 @@ export default class Usuarios {
                 Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro actualizado" })
                 this.#modal.dispose()
             } else {
-                Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo actualizar el registro", response })
+                //Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo actualizar el registro", response })
+                console.log(response)
             }
         } catch (e) {
-            Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la actualización de registros", e })
+           // Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la actualización de registros", e })
         }
     }
 
@@ -339,7 +343,7 @@ export default class Usuarios {
 
         try {
             // enviar la solicitud de eliminación
-            let response = await Helpers.fetchData(`${this.#url}/vuelos/${data.identificacion}`, {
+            let response = await Helpers.fetchData(`${this.#url}/usuarios/${data.identificacion}`, {
                 method: "DELETE"
             })
 
@@ -349,10 +353,11 @@ export default class Usuarios {
                 Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro eliminado" })
                 this.#modal.dispose()
             } else {
-                Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo eliminar el registro", response })
+               // Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo eliminar el registro", response })
+               console.log(response)
             }
         } catch (e) {
-            Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la eliminación de registros", e })
+            //Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la eliminación de registros", e })
         }
     }
 
@@ -377,4 +382,5 @@ export default class Usuarios {
             password: contraseña
         }
     }
+   //-------> ...Reclame con bemencia, todo lo que me ha pasado a sido culpa de tu incopetencia
 }

@@ -326,7 +326,8 @@ export default class Trayectos {
     // crear la lista de opciones para el select de trayectos
 
 
-    console.log(Duration.fromISO(duracion).toFormat("hh:mm:ss"))
+
+
 
     // inyectar en el formulario de vuelos los datos del objeto recibido como argumento
     const htmlForm = this.#formTrayectos.translate(origen, destino, Duration.fromISO(duracion).toFormat("hh:mm:ss"), costo)

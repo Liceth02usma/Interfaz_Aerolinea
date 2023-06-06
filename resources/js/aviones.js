@@ -224,7 +224,10 @@ export default class Aviones {
             // enviar la solicitud de actualización con los datos del formulario
             let response = await Helpers.fetchData(`${this.#url}/aviones/${row.getData().matricula}`, {
                 method: "PUT",
-                body: data,
+                body: {
+                    matricula : data.matricula,
+                    modelo : data.modelo
+                },
             })
 
             if (response.message === "ok") {
@@ -284,22 +287,29 @@ export default class Aviones {
 
         try {
             // enviar la solicitud de eliminación
-            let response = await Helpers.fetchData(`${this.#url}/aviones/${queryString}`, {
+            let response = await Helpers.fetchData(`${this.#url}/sillas/avion/${queryString}`, {
                 method: "DELETE"
             })
 
-            console.log(response)
-
             if (response.message === "ok") {
+                let response2 = await Helpers.fetchData(`${this.#url}/aviones/${queryString}`, {
+                    method: "DELETE"
+                })
+
+                alert(response2.message)
                 // eliminar la fila de la tabla
-                row.delete()
-                Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro eliminado" })
-                this.#modal.dispose()
+                if(response2.message){
+                    row.delete()
+                    //Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro eliminado" })
+                    this.#modal.dispose()
+                }
             } else {
-                Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo eliminar el registro", response })
+                //Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo eliminar el registro", response })
+                console.log(response)
             }
         } catch (e) {
-            Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la eliminación de registros", e })
+           // Helperstoast({ icon: `${icons.exclamationTriangle}`, message: "Sin acceso a la eliminación de registros", e })
+           console.log(e)
         }
     }
 

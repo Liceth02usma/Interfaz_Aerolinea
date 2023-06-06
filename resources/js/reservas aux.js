@@ -15,7 +15,6 @@ export default class Reservas {
   static #sillas
   static #ejecutivo
   static #data2
-  static #cont = 0
 
   constructor() {
     throw new Error("Esta clase no permite el uso del constructor. Utilice Reservas.init()")
@@ -125,8 +124,8 @@ export default class Reservas {
         },
         { title: "CANCELADO", field: "cancelado", hozAlign: "center", formatter:"tickCross" },
         { formatter: Reservas.#addChildButton, width: 40, hozAlign: 'center', cellClick: Reservas.#adicionarVuelos },
-        { formatter: this.#editRowButton, width: 40, hozAlign: "center", cellClick: this.#editRow },
-        { formatter: this.#deleteRowButton, width: 40, hozAlign: "center", cellClick: this.#deleteRow }
+        { formatter: this.#editRowButton, width: 40, hozAlign: "center", cellClick: Reservas.#editRow },
+        { formatter: this.#deleteRowButton, width: 40, hozAlign: "center", cellClick: Reservas.#deleteRow }
       ],
       rowFormatter: function (row) {
           //create and style holder elements
@@ -229,21 +228,21 @@ export default class Reservas {
               id: "cancel-add-flights",
               style: "btn-red",
               html: `<span>Cancelar</span>`,
-              callBack: () => this.#modal.dispose(),
+              callBack: () => this.#modal.close(),
           },
       ],
   })).show()
 
-  document.querySelector('#fechaHora').classList.remove('hidden')
+  document.querySelector(`#${this.#modal.id} #fechaHora`).classList.remove('hidden')
  
-  document.querySelector('#usuario').classList.remove('hidden')
-  document.querySelector('#checkIn2').classList.remove('hidden')
-  document.querySelector('#check-ida2').classList.add('hidden')
-  document.querySelector('#vuelo1').classList.add('hidden')
+  document.querySelector(`#${this.#modal.id} #usuario`).classList.remove('hidden')
+  document.querySelector(`#${this.#modal.id} #checkIn2`).classList.remove('hidden')
+  document.querySelector(`#${this.#modal.id} #check-ida2`).classList.add('hidden')
+  document.querySelector(`#${this.#modal.id} #vuelo1`).classList.add('hidden')
   console.log(document.querySelector('#vuelo1'))
-  document.querySelector('#silla2').classList.add('hidden')
-  document.querySelector('#menu2').classList.add('hidden')
-  document.querySelector('#licor2').classList.add('hidden')
+  document.querySelector(`#${this.#modal.id} #silla2`).classList.add('hidden')
+  document.querySelector(`#${this.#modal.id} #menu2`).classList.add('hidden')
+  document.querySelector(`#${this.#modal.id} #licor2`).classList.add('hidden')
 
 
   }
@@ -269,10 +268,10 @@ export default class Reservas {
         ],
     }).show()
 
-    document.querySelector('#fechaHora').classList.remove('hidden')
-    document.querySelector('#fecha-hora').removeAttribute('disabled')
-    document.querySelector('#usuario').classList.remove('hidden')
-    document.querySelector('#usuarios').disabled = false
+    document.querySelector(`#${this.#modal.id} #fechaHora`).classList.remove('hidden')
+    document.querySelector(`#${this.#modal.id} #fecha-hora`).removeAttribute('disabled')
+    document.querySelector(`#${this.#modal.id} #usuario`).classList.remove('hidden')
+    document.querySelector(`#${this.#modal.id} #usuarios`).disabled = false
 
     document.querySelector(`#${this.#modal.id} #vuelos`).addEventListener('change', async () => {
       const iVuelo = document.querySelector(`#${this.#modal.id} #vuelos`).selectedIndex
@@ -373,17 +372,17 @@ static #add2 = async (cell) => {
   const data = this.#getFormData(cell,document.querySelector('#usuarios').value,document.querySelector('#fecha-hora').value)/////////////////////////////
   console.log(data)
 
-  data.forEach( async t =>{
+
     try {
         // enviar la solicitud de creación con los datos del formulario
         let response = await Helpers.fetchData(`${this.#url}/reservas`, {
           method: "POST",
           body: {
-            fechaHora: t.fechaHoraReserva,
-            usuario: t.usuario
+            fechaHora: data[0].fechaHoraReserva,
+            usuario: data[0].usuario
           }
         })
-  
+      data.forEach( async t =>{
         if (response.message === "ok") {
   
           let response2 = await Helpers.fetchData(`${this.#url}/vuelos-reservas`, {
@@ -412,6 +411,7 @@ static #add2 = async (cell) => {
             error: response
           })
         }
+      })
       } catch (e) {
 
         Toast.info({
@@ -420,7 +420,6 @@ static #add2 = async (cell) => {
           error: response
         })
       }
-  })
 
   
 }
@@ -450,7 +449,7 @@ static #add2 = async (cell) => {
             row.getData().cancelada = data.cancelada
             row.update( row.getData())
             Helpers.toast({ icon: `${icons.checkSquare}`, message: "Registro actualizado" })
-            this.#modal.dispose()
+            this.#modal.close()
         } else {
             Helpers.toast({ icon: `${icons.exclamationTriangle}`, message: "No se pudo actualizar el registro", response })
         }
@@ -483,7 +482,7 @@ static #add2 = async (cell) => {
               id: "cancel-add-flights",
               style: "btn-red",
               html: `${icons.xLg}<span>Cancelar</span>`,
-              callBack: () => this.#modal.dispose(),
+              callBack: () => this.#modal.close(),
           },
       ],
   })).show()
@@ -536,7 +535,7 @@ static #add2 = async (cell) => {
               id: "cancel-add-flights",
               style: "btn-red",
               html: `<span>Cancelar</span>`,
-              callBack: () => this.#modal.dispose(),
+              callBack: () => this.#modal.close(),
           },
       ],
   })).show()
@@ -567,15 +566,16 @@ static #add2 = async (cell) => {
     if (!Helpers.okForm("#form-reservas")) {
         return
     }
+    
     let data2 = row.getRow().getData()
     let reserva = data2.reserva
     let silla = data2.silla
     let vuelo = data2.vuelo
     const c = `fechaHoraReserva=${reserva.fechaHora}&usuario=${reserva.usuario.identificacion}&fechaHoraVuelo=${vuelo.fechaHora}&origen=${vuelo.trayecto.origen}&destino=${vuelo.trayecto.destino}&avion=${vuelo.avion.matricula}&fila=${silla.fila}&columna=${silla.columna}`
 
-    console.log(vuelo.trayecto.origen)
-    const data = this.#getFormData(row,data2.reserva.usuario.identificacion, data2.reserva.fechaHora)[0]
 
+    const data = this.#getFormData(row,data2.reserva.usuario.identificacion, data2.reserva.fechaHora)[0]
+    console.log(c, data)
 
     
 
@@ -619,7 +619,7 @@ static #add2 = async (cell) => {
               id: "cancel-add-flights",
               style: "btn-red",
               html: `${icons.xLg}<span>Cancelar</span>`,
-              callBack: () => this.#modal.dispose(),
+              callBack: () => this.#modal.close(),
           },
       ],
   })).show()
@@ -682,7 +682,7 @@ static #add2 = async (cell) => {
           id: "cancel-add-flights",
           style: "btn-red",
           html: `<span>Cancelar</span>`,
-          callBack: () => this.#modal.dispose(),
+          callBack: () => this.#modal.close(),
         }
       ],
     }).show()
@@ -1008,25 +1008,6 @@ static #add2 = async (cell) => {
   static #addChildButton = (cell, formatterParams, onRendered) => `
   <button id="add-child" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Agregar hijo">${icons.addChild}</button>
 `
-
-  static #addChildClick = (e, cell) => {
-  console.log('agregar hijo', cell.getRow().getData())
-}
-
-static #editRowChildButton = (cell, formatterParams, onRendered) => `
-        <button id="edit-row-child" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Editar hijo">${icons.edit}</button>
-    `
-
-    static #editRowChildClick = (e, cell) => {
-        console.log('edit child', cell.getRow().getData())
-    }
-
-    static #deleteRowChildButton = (cell, formatterParams, onRendered) => `
-        <button id="delete-row-child" class="border-0 bg-transparent" data-bs-toggle="tooltip" title="Eliminar hijo">${icons.delete}</button>
-    `
-    static #deleteRowChildClick = (e, cell) => {
-        console.log('delete child', cell.getRow().getData())
-    }
 
 
 }
